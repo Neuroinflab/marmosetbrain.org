@@ -1,0 +1,117 @@
+###
+# app configuration
+# http://docs.pylonsproject.org/projects/pyramid/en/1.5-branch/narr/environment.html
+###
+
+[app:main]
+use = egg:connectome
+
+pyramid.reload_templates = true
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.default_locale_name = en
+pyramid.includes =
+#    pyramid_debugtoolbar
+    pyramid_tm
+    pyramid_mako
+#    connectome.libs.sass_renderer
+
+mako.directories = connectome:templates
+mako.imports = from markupsafe import escape_silent, Markup
+    from datetime import timedelta
+    import json
+mako.default_filters = escape_silent
+#sqlalchemy.url = sqlite:///%(here)s/connectome.sqlite
+sqlalchemy.url = postgresql://monash:marmosetConnectome@localhost/marmoset
+#sqlalchemy.url = postgresql://monash:marmosetConnectome@nectar-db1/marmoset
+#sqlalchemy.url = postgresql://monash:marmosetConnectome@db1.marmosetbrain.org/marmoset
+sqlalchemy_old.url = mysql://root:admin@localhost/mbaDB_dev
+#sass.asset_path = connectome:static/css
+#sass.static_url_root = connectome:static
+#sass.output_path = connectome:static/css
+#sass.output_url_root = connectome:static
+#sass.compress = false
+#sass.cache = false
+# By default, the toolbar only appears for clients from IP addresses
+# '127.0.0.1' and '::1'.
+#debugtoolbar.hosts = 127.0.0.1 ::1 110.144.26.131 172.19.160.1 172.19.160.100
+
+###
+# wsgi server configuration
+###
+
+[server:main]
+use = egg:waitress#main
+host = 0.0.0.0
+port = 6540
+
+###
+# logging configuration
+# http://docs.pylonsproject.org/projects/pyramid/en/1.5-branch/narr/logging.html
+###
+
+[loggers]
+keys = root, connectome, sqlalchemy
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console
+
+[logger_connectome]
+level = INFO
+handlers =
+qualname = connectome
+
+[logger_sqlalchemy]
+level = WARN
+handlers =
+qualname = sqlalchemy.engine
+# "level = INFO" logs SQL queries.
+# "level = DEBUG" logs SQL queries and results.
+# "level = WARN" logs neither.  (Recommended for production systems.)
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+[uwsgi]
+socket = /var/lib/uwsgi/marmoset.sock
+chmod-socket = 777
+;master = true
+
+;processes = 1
+threads = 10
+harakiri = 180
+harakiri-verbose = true
+limit-post = 104857600
+post-buffering = 8192
+chdir = /opt/marmoset_connectome/web
+
+;daemonize = ./uwsgi.log
+logto = /var/log/uwsgi/marmoset.log
+pidfile = /run/uwsgi/marmoset.pid
+
+listen = 128
+max-requests = 65535
+
+;reload-on-as = 16384
+reload-on-rss = 2048
+no-orphans = true
+log-slow = true
+vacuum = true
+;virtualenv = /home/baishi/.virtualenvs/psu3
+chdir = /opt/marmoset_connectome/web
+paste = config:%p
+paste-logger = true

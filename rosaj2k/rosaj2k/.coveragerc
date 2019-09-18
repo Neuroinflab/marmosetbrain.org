@@ -1,0 +1,3 @@
+[run]
+source = rosaj2k
+omit = rosaj2k/test*
